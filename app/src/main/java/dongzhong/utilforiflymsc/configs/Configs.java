@@ -1,6 +1,7 @@
 package dongzhong.utilforiflymsc.configs;
 
 import android.os.Environment;
+import android.util.Log;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -10,16 +11,16 @@ import java.io.FileInputStream;
  */
 
 public class Configs {
-    private final static String SdPath = Environment.getExternalStorageDirectory().getAbsolutePath();
-    private final static String filePath = "ifly";
+    private final static String filePath = "/mnt/sdcard/ifly";
     private final static String fileName = "appid.txt";
 
     private static File fileDir;
     private static File file;
     private static FileInputStream fileInputStream;
     static {
-        fileDir = new File(SdPath, filePath);
+        fileDir = new File(filePath);
         if (!fileDir.exists()) {
+            Log.d("Test", fileDir.getAbsolutePath());
             fileDir.mkdir();
         }
         file = new File(fileDir, fileName);
