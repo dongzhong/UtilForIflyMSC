@@ -1,6 +1,5 @@
 package dongzhong.utilforiflymsc.configs;
 
-import android.os.Environment;
 import android.util.Log;
 
 import java.io.File;
@@ -20,7 +19,6 @@ public class Configs {
     static {
         fileDir = new File(filePath);
         if (!fileDir.exists()) {
-            Log.d("Test", fileDir.getAbsolutePath());
             fileDir.mkdir();
         }
         file = new File(fileDir, fileName);
@@ -49,6 +47,7 @@ public class Configs {
             byte[] buffer = new byte[length];
             fileInputStream.read(buffer);
             String appid = new String(buffer);
+            Log.d("Test", "appid: " + appid);
             return appid;
         }
         catch (Exception e) {
