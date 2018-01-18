@@ -32,7 +32,6 @@ public class IflyManager {
     private Context context;
     private SpeechRecognizer speechRecognizer;
 
-    private FileInputThread fileInputThread;
     private IflyRecognizeListener listener;
     private ResultLogUtil resultLogUtil;
 
@@ -85,6 +84,9 @@ public class IflyManager {
      * @param fileName
      */
     public void startRecognize(@NonNull String fileName) throws FileNotFoundException {
+        if (resultLogUtil != null) {
+            resultLogUtil.stopWriteLog();
+        }
         resultLogUtil = new ResultLogUtil();
         if (speechRecognizer != null) {
             speechRecognizer.setParameter(SpeechConstant.AUDIO_SOURCE, "-1");
@@ -99,6 +101,7 @@ public class IflyManager {
         }
     }
 
+    private FileInputThread fileInputThread;
     private class FileInputThread extends Thread {
         private String fileName;
         private File file;
@@ -148,6 +151,25 @@ public class IflyManager {
         public synchronized void stopInput() {
             Log.d("Test", "结束写入数据");
             isRunning = false;
+        }
+    }
+
+    /**
+     * 直接使用麦克风进行识别
+     */
+    public void startRecognize() {
+        if (resultLogUtil != null) {
+            resultLogUtil.stopWriteLog();
+        }
+        resultLogUtil = new ResultLogUtil();
+        if (speechRecognizer != null) {
+            speechRecognizer.setParameter(SpeechConstant.AUDIO_SOURCE, "1");
+            speechRecognizer.startListening(recognizerListener);
+        }
+        else {
+            if (listener != null) {
+                listener.onError(-1, "speechRecognizer为空");
+            }
         }
     }
 
