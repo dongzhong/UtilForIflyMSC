@@ -20,6 +20,7 @@ import java.io.FileNotFoundException;
 import dongzhong.utilforiflymsc.configs.Configs;
 import dongzhong.utilforiflymsc.exceptions.InitException;
 import dongzhong.utilforiflymsc.util.Parser;
+import dongzhong.utilforiflymsc.util.ResultLogUtil;
 
 /**
  * Created by dongzhong on 2018/1/17.
@@ -33,6 +34,7 @@ public class IflyManager {
 
     private FileInputThread fileInputThread;
     private IflyRecognizeListener listener;
+    private ResultLogUtil resultLogUtil;
 
     private IflyManager(Context context) throws InitException {
         String appid = Configs.getAppId();
@@ -83,6 +85,7 @@ public class IflyManager {
      * @param fileName
      */
     public void startRecognize(@NonNull String fileName) throws FileNotFoundException {
+        resultLogUtil = new ResultLogUtil();
         if (speechRecognizer != null) {
             speechRecognizer.setParameter(SpeechConstant.AUDIO_SOURCE, "-1");
             fileInputThread = new FileInputThread(fileName);
@@ -177,6 +180,8 @@ public class IflyManager {
                 if (isLast) {
                     listener.onResultFinal(resultStringBuilder.toString());
                     Log.d("Test", "最终结果: " + resultStringBuilder.toString());
+                    resultLogUtil.writeToResultFile(resultStringBuilder.toString());
+                    resultLogUtil.writeToResultFile(",");
                     if (resultStringBuilder.length() > 0) {
                         resultStringBuilder.delete(0, resultStringBuilder.length());
                     }

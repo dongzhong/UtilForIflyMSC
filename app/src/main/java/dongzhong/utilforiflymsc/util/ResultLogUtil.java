@@ -10,11 +10,12 @@ import java.util.Locale;
  * Created by dongzhong on 2018/1/18.
  */
 
-public class LogUtil {
-    private static String resultFileName;
-    private static String filePathName = "/mnt/sdcard/ifly";
-    private static FileOutputStream resultFileOutputStream;
-    static {
+public class ResultLogUtil {
+    private String resultFileName;
+    private String filePathName = "/mnt/sdcard/ifly/result_log";
+    private FileOutputStream resultFileOutputStream;
+
+    public ResultLogUtil() {
         Calendar calendar = Calendar.getInstance();
         SimpleDateFormat format = new SimpleDateFormat("yyy-MM-dd-HH-mm-ss-SSS", Locale.CHINA);
         resultFileName = format.format(calendar.getTime()) + ".txt";
@@ -41,11 +42,11 @@ public class LogUtil {
 
     /**
      * 将识别结果写入文件
-     * 文件位置：/mnt/sdcard/ifly/result.txt
+     * 文件位置：/mnt/sdcard/ifly/result_log/[识别时间].txt
      *
      * @param content
      */
-    public static void writeToResultFile(String content) {
+    public void writeToResultFile(String content) {
         if (resultFileOutputStream != null) {
             try {
                 resultFileOutputStream.write(content.getBytes());
@@ -53,6 +54,15 @@ public class LogUtil {
             catch (Exception e) {
 
             }
+        }
+    }
+
+    public void stopWriteLog() {
+        try {
+            resultFileOutputStream.close();
+        }
+        catch (Exception e) {
+
         }
     }
 }
