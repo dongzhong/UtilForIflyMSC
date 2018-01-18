@@ -201,6 +201,7 @@ public class IflyManager {
             if (resultStringBuilder != null && resultStringBuilder.length() > 0) {
                 resultStringBuilder.delete(0, resultStringBuilder.length());
             }
+            resultLogUtil.writeToResultFile(speechError.getErrorDescription());
             speechRecognizer.startListening(recognizerListener);
         }
 
