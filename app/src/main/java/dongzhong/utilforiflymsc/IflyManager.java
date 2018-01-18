@@ -3,6 +3,7 @@ package dongzhong.utilforiflymsc;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.util.Log;
 
 import com.iflytek.cloud.InitListener;
 import com.iflytek.cloud.RecognizerListener;
@@ -14,6 +15,7 @@ import com.iflytek.cloud.SpeechUtility;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 
 import dongzhong.utilforiflymsc.configs.Configs;
 import dongzhong.utilforiflymsc.exceptions.InitException;
@@ -29,6 +31,7 @@ public class IflyManager {
     private Context context;
     private SpeechRecognizer speechRecognizer;
 
+    private FileInputThread fileInputThread;
     private IflyRecognizeListener listener;
 
     private IflyManager(Context context) throws InitException {
@@ -74,17 +77,78 @@ public class IflyManager {
         return instance;
     }
 
-    public void startRecognize(@NonNull String fileName) {
-        speechRecognizer.setParameter(SpeechConstant.AUDIO_SOURCE, "-2");
-        speechRecognizer.setParameter(SpeechConstant.ASR_SOURCE_PATH, fileName);
-        File file = new File(fileName);
-        if (!file.exists()) {
-            return;
+    /**
+     * 通过音频文件识别
+     *
+     * @param fileName
+     */
+    public void startRecognize(@NonNull String fileName) throws FileNotFoundException {
+        if (speechRecognizer != null) {
+            speechRecognizer.setParameter(SpeechConstant.AUDIO_SOURCE, "-1");
+            fileInputThread = new FileInputThread(fileName);
+            speechRecognizer.startListening(recognizerListener);
+            fileInputThread.start();
         }
-        speechRecognizer.startListening(recognizerListener);
+        else {
+            if (listener != null) {
+                listener.onError(-1, "speechRecognizer为空");
+            }
+        }
     }
 
+    private class FileInputThread extends Thread {
+        private String fileName;
+        private File file;
+        private FileInputStream fileInputStream;
 
+        private boolean isRunning = false;
+
+        private FileInputThread(@NonNull String fileName) throws FileNotFoundException {
+            super();
+            this.fileName = fileName;
+            file = new File(fileName);
+            if (!file.exists()) {
+                throw new FileNotFoundException();
+            }
+            fileInputStream = new FileInputStream(file);
+        }
+
+        @Override
+        public void run() {
+            if (fileInputStream == null) {
+                return;
+            }
+            byte[] buffer = new byte[1024];
+            try {
+                Log.d("Test", "数据长度: " + fileInputStream.available());
+                while (fileInputStream != null && isRunning && fileInputStream.read(buffer) >= 0) {
+                    if (speechRecognizer != null) {
+                        speechRecognizer.writeAudio(buffer, 0, buffer.length);
+                    }
+                    sleep(40);
+                }
+                fileInputStream.close();
+            }
+            catch (Exception e) {
+                Log.d("Test", "数据写入异常: " + e.getMessage());
+            }
+            Log.d("Test", "写入结束");
+        }
+
+        @Override
+        public synchronized void start() {
+            Log.d("Test", "开始写入数据");
+            isRunning = true;
+            super.start();
+        }
+
+        public synchronized void stopInput() {
+            Log.d("Test", "结束写入数据");
+            isRunning = false;
+        }
+    }
+
+    private StringBuilder resultStringBuilder = new StringBuilder();
     private RecognizerListener recognizerListener = new RecognizerListener() {
         @Override
         public void onVolumeChanged(int i, byte[] bytes) {
@@ -98,23 +162,41 @@ public class IflyManager {
 
         @Override
         public void onEndOfSpeech() {
-
+            Log.d("Test", "说话结束");
         }
 
         @Override
         public void onResult(RecognizerResult recognizerResult, boolean isLast) {
+            if (resultStringBuilder == null) {
+                resultStringBuilder = new StringBuilder();
+            }
             String iatReuslt = Parser.iatJsonResult2String(recognizerResult.getResultString());
+            resultStringBuilder.append(iatReuslt);
             if (listener != null) {
                 listener.onResult(iatReuslt);
                 if (isLast) {
-                    listener.onResultFinal(iatReuslt);
+                    listener.onResultFinal(resultStringBuilder.toString());
+                    Log.d("Test", "最终结果: " + resultStringBuilder.toString());
+                    if (resultStringBuilder.length() > 0) {
+                        resultStringBuilder.delete(0, resultStringBuilder.length());
+                    }
+                    speechRecognizer.startListening(recognizerListener);
                 }
             }
         }
 
         @Override
         public void onError(SpeechError speechError) {
-
+            if (speechError == null) {
+                return;
+            }
+            if (listener != null) {
+                listener.onError(speechError.getErrorCode(), speechError.getErrorDescription());
+            }
+            if (resultStringBuilder != null && resultStringBuilder.length() > 0) {
+                resultStringBuilder.delete(0, resultStringBuilder.length());
+            }
+            speechRecognizer.startListening(recognizerListener);
         }
 
         @Override

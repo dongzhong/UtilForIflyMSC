@@ -6,6 +6,8 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
+import java.io.FileNotFoundException;
+
 import dongzhong.utilforiflymsc.exceptions.InitException;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
@@ -49,6 +51,48 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.button_start:
+                iflyManager.setRecognizeListener(new IflyManager.IflyRecognizeListener() {
+                    @Override
+                    public void onResult(final String result) {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                //textView.setText(result);
+                            }
+                        });
+                    }
+
+                    @Override
+                    public void onResultFinal(final String finalResult) {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                textView.setText(finalResult);
+                            }
+                        });
+                    }
+
+                    @Override
+                    public void onError(final int errorCode, final String errorDes) {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                textView.setText("errorCode: " + errorCode + "\n" + "errorDes: " + errorDes);
+                            }
+                        });
+                    }
+                });
+                try {
+                    iflyManager.startRecognize("/mnt/sdcard/ifly/test.pcm");
+                }
+                catch (FileNotFoundException e) {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            textView.setText("文件不存在");
+                        }
+                    });
+                }
                 break;
             default:
                 break;
