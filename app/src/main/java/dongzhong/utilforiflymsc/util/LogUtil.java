@@ -2,16 +2,22 @@ package dongzhong.utilforiflymsc.util;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Locale;
 
 /**
  * Created by dongzhong on 2018/1/18.
  */
 
 public class LogUtil {
-    private static String resultFileName = "result.txt";
+    private static String resultFileName;
     private static String filePathName = "/mnt/sdcard/ifly";
     private static FileOutputStream resultFileOutputStream;
     static {
+        Calendar calendar = Calendar.getInstance();
+        SimpleDateFormat format = new SimpleDateFormat("yyy-MM-dd-HH-mm-ss-SSS", Locale.CHINA);
+        resultFileName = format.format(calendar.getTime()) + ".txt";
         File fileDir = new File(filePathName);
         if (!fileDir.exists()) {
             fileDir.mkdir();
@@ -26,7 +32,7 @@ public class LogUtil {
             }
         }
         try {
-            resultFileOutputStream = new FileOutputStream(resultFile);
+            resultFileOutputStream = new FileOutputStream(resultFile, true);
         }
         catch (Exception e) {
 
