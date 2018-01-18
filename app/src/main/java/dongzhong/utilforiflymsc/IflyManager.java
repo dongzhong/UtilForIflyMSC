@@ -202,6 +202,7 @@ public class IflyManager {
                 resultStringBuilder.delete(0, resultStringBuilder.length());
             }
             resultLogUtil.writeToResultFile(speechError.getErrorDescription());
+            resultLogUtil.writeToResultFile(",");
             speechRecognizer.startListening(recognizerListener);
         }
 
