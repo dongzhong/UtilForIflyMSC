@@ -11,7 +11,7 @@ public class IatBean {
     private boolean ls;
     private int bg;
     private int ed;
-    private List<wsBean> ws;
+    private List<WsBean> ws;
 
     public int getSn() {
         return sn;
@@ -45,17 +45,17 @@ public class IatBean {
         this.ed = ed;
     }
 
-    public List<wsBean> getWs() {
+    public List<WsBean> getWs() {
         return ws;
     }
 
-    public void setWs(List<wsBean> ws) {
+    public void setWs(List<WsBean> ws) {
         this.ws = ws;
     }
 
-    public static class wsBean {
+    public static class WsBean {
         private int bg;
-        private List<cwBean> cw;
+        private List<CwBean> cw;
 
         public int getBg() {
             return bg;
@@ -65,15 +65,15 @@ public class IatBean {
             this.bg = bg;
         }
 
-        public List<cwBean> getCw() {
+        public List<CwBean> getCw() {
             return cw;
         }
 
-        public void setCw(List<cwBean> cw) {
+        public void setCw(List<CwBean> cw) {
             this.cw = cw;
         }
 
-        public static class cwBean {
+        public static class CwBean {
             private String w;
             private int sc;
 

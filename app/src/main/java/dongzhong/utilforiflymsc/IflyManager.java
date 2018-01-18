@@ -1,10 +1,14 @@
 package dongzhong.utilforiflymsc;
 
 import android.content.Context;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
 
 import com.iflytek.cloud.InitListener;
+import com.iflytek.cloud.RecognizerListener;
+import com.iflytek.cloud.RecognizerResult;
 import com.iflytek.cloud.SpeechConstant;
+import com.iflytek.cloud.SpeechError;
 import com.iflytek.cloud.SpeechRecognizer;
 import com.iflytek.cloud.SpeechUtility;
 
@@ -13,6 +17,7 @@ import java.io.FileInputStream;
 
 import dongzhong.utilforiflymsc.configs.Configs;
 import dongzhong.utilforiflymsc.exceptions.InitException;
+import dongzhong.utilforiflymsc.util.Parser;
 
 /**
  * Created by dongzhong on 2018/1/17.
@@ -23,6 +28,8 @@ public class IflyManager {
 
     private Context context;
     private SpeechRecognizer speechRecognizer;
+
+    private IflyRecognizeListener listener;
 
     private IflyManager(Context context) throws InitException {
         String appid = Configs.getAppId();
@@ -74,5 +81,73 @@ public class IflyManager {
         if (!file.exists()) {
             return;
         }
+        speechRecognizer.startListening(recognizerListener);
+    }
+
+
+    private RecognizerListener recognizerListener = new RecognizerListener() {
+        @Override
+        public void onVolumeChanged(int i, byte[] bytes) {
+
+        }
+
+        @Override
+        public void onBeginOfSpeech() {
+
+        }
+
+        @Override
+        public void onEndOfSpeech() {
+
+        }
+
+        @Override
+        public void onResult(RecognizerResult recognizerResult, boolean isLast) {
+            String iatReuslt = Parser.iatJsonResult2String(recognizerResult.getResultString());
+            if (listener != null) {
+                listener.onResult(iatReuslt);
+                if (isLast) {
+                    listener.onResultFinal(iatReuslt);
+                }
+            }
+        }
+
+        @Override
+        public void onError(SpeechError speechError) {
+
+        }
+
+        @Override
+        public void onEvent(int i, int i1, int i2, Bundle bundle) {
+
+        }
+    };
+
+    public void setRecognizeListener(IflyRecognizeListener listener) {
+        this.listener = listener;
+    }
+
+    public interface IflyRecognizeListener {
+        /**
+         * 获取实时识别结果
+         *
+         * @param result
+         */
+        void onResult(String result);
+
+        /**
+         * 获取最终结果
+         *
+         * @param finalResult
+         */
+        void onResultFinal(String finalResult);
+
+        /**
+         * 识别异常
+         *
+         * @param errorCode
+         * @param errorDes
+         */
+        void onError(int errorCode, String errorDes);
     }
 }
